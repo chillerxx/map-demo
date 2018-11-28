@@ -1,0 +1,348 @@
+<style lang='less'>
+.map_container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  .map {
+    width: 100%;
+    height: 100%;
+  }
+  .back_wrap {
+    box-shadow: 0px 0px 8px #e4e4e4;
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    position: absolute;
+    display: flex;
+    align-items: center;
+    top: 1.25rem;
+    left: 0.9375rem;
+    .back_icon {
+      margin: 0 auto;
+      width: 20px;
+      height: 20px;
+    }
+  }
+  .route_wrap {
+    box-shadow: 0px 0px 12px #e4e4e4;
+    width: 100%;
+    // height: 420px;
+    background: #fff;
+    border-radius: 30px 30px 0 0;
+    position: absolute;
+    bottom: 0;
+    .route_top {
+      color: #8a8a8a;
+      height: 70px;
+      font-size: 20px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .route_bottom_wrap {
+      // height: 350px;
+      background: #f4f4f4;
+      padding-top: 6px;
+      box-sizing: border-box;
+      .route_content {
+        color: #8a8a8a;
+        overflow-y: scroll;
+        background: #fff;
+        height: 264px;
+        .route_item {
+          padding: 10px;
+        }
+      }
+      .route_type {
+        margin-top: 6px;
+        background: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 70px;
+        cover-image {
+          margin: 0 15px 0 15px;
+          background: #f3f3f3;
+          border-radius: 50%;
+          padding: 10px;
+          width: 35px;
+          height: 35px;
+        }
+      }
+    }
+  }
+  .line {
+    background: #e4e4e4;
+    width: 100%;
+    height: 1px;
+  }
+}
+</style>
+
+<template>
+  <view class='map_container'>
+    <map id="navi_map" class="map" scale="13" subkey="FYDBZ-5V5WS-X6SOQ-6UEDO-TPBCZ-EVFDW" longitude="{{longitude}}" latitude="{{latitude}}" markers="{{markers}}" polyline="{{polyline}}" show-location>
+      <cover-view class='back_wrap' @tap="back">
+        <cover-image class='back_icon' src='../../img/back.png'></cover-image>
+      </cover-view>
+      <cover-view class='route_wrap' @tap="pull" animation="{{animationData}}">
+        <cover-view class='route_top'>
+          <cover-view>{{info.taxi+'元'}}</cover-view>
+          <cover-view>{{info.distance+'米'}}</cover-view>
+          <cover-view>{{info.time+'秒'}}</cover-view>
+        </cover-view>
+        <cover-view class='line'></cover-view>
+        <cover-view class='route_bottom_wrap'>
+          <cover-view class='route_content'>
+            <cover-view class='route_item' wx:for="{{[{desc: '11111'},{desc: '11111'}]}}" wx:key="{{index}}">
+              {{item.desc}}
+            </cover-view>
+          </cover-view>
+          <cover-view class='line'></cover-view>
+          <cover-view class='route_type'>
+            <cover-image catchtap="type('gongjiao')" src="{{type === 'gongjiao'?'../../img/gongjiao.png':'../../img/gongjiao_.png'}}"></cover-image>
+            <cover-image catchtap="type('buxing')" src="{{type === 'buxing'?'../../img/buxing.png':'../../img/buxing_.png'}}"></cover-image>
+            <cover-image catchtap="type('jiache')" src="{{type === 'jiache'?'../../img/jiache.png':'../../img/jiache_.png'}}"></cover-image>
+            <cover-image catchtap="type('qixing')" src="{{type === 'qixing'?'../../img/qixing.png':'../../img/qixing_.png'}}"></cover-image>
+          </cover-view>
+        </cover-view>
+      </cover-view>
+    </map>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import amap from '../../map/amap';
+
+export default class Index extends wepy.page {
+  config = {};
+
+  components = {};
+
+  mixins = [];
+
+  data = {
+    longitude: '',
+    latitude: '',
+    markers: [],
+    polyline: [],
+    points: [],
+    info: {},
+    desc: [],
+    type: 'jiache',
+    animationData: {},
+    isShow: true,
+    origin: '',
+    destination: ''
+  };
+
+  computed = {};
+
+  methods = {
+    back() {
+      this.$back();
+    },
+    pull() {
+      let num = '';
+      if (this.isShow) {
+        num = 350;
+      } else {
+        num = 0;
+      }
+      this.animation.translateY(num).step();
+      this.animationData = this.animation.export();
+      this.isShow = !this.isShow;
+      this.$apply();
+    },
+    type(type) {
+      this.type = type;
+      this.points = [];
+      this.$apply();
+      this.getRoute(type);
+    }
+  };
+
+  calcDiff(long, lat) {
+    return (
+      Math.abs(this.longitude - parseFloat(long)) +
+      Math.abs(this.latitude - parseFloat(lat))
+    );
+  }
+
+  // 步行 驾车 骑行
+  commonPoints(steps) {
+    let points = this.points;
+    steps.forEach(step => {
+      let lines = step.polyline.split(';');
+      lines.forEach(line => {
+        points.push({
+          longitude: line.split(',')[0],
+          latitude: line.split(',')[1]
+        });
+      });
+    });
+    this.points = points;
+    this.$apply();
+  }
+
+  // 公交
+  busPoints(seg) {
+    let points = this.points;
+    let lines = seg.bus.buslines[0].polyline.split(';');
+    lines.forEach(line => {
+      points.push({
+        longitude: line.split(',')[0],
+        latitude: line.split(',')[1]
+      });
+    });
+    this.points = points;
+    this.$apply();
+  }
+
+  getRoute(type = 'jiache') {
+    let str = '';
+    switch (type) {
+      case 'gongjiao':
+        str = 'getTransitRoute';
+        break;
+      case 'qixing':
+        str = 'getRidingRoute';
+        break;
+      case 'jiache':
+        str = 'getDrivingRoute';
+        break;
+      case 'buxing':
+        str = 'getWalkingRoute';
+        break;
+      default:
+        str = 'getDrivingRoute';
+        break;
+    }
+
+    amap.getRoute(str, this.origin, this.destination).then(data => {
+      console.log(data);
+
+      if (type !== 'gongjiao') {
+        let steps = data.paths[0].steps;
+        this.commonPoints(steps);
+        this.info = {
+          taxi: data.taxi_cost ? Math.floor(data.taxi_cost) : '0',
+          distance: data.paths[0].distance,
+          time: data.paths[0].duration
+        };
+      } else {
+        let trans = data.transits[0];
+        this.info = {
+          taxi: Math.floor(data.taxi_cost),
+          distance: data.distance,
+          time: trans.duration
+        };
+        let segs = trans.segments;
+        segs.forEach(seg => {
+          let longB = '',
+            latB = '',
+            diffB = '',
+            longW = '',
+            latW = '',
+            diffW = '';
+          if (seg.bus.buslines.length !== 0 && seg.walking) {
+            longB = seg.bus.buslines[0].departure_stop.location.split(',')[0];
+            latB = seg.bus.buslines[0].departure_stop.location.split(',')[1];
+            longW = seg.walking.origin.split(',')[0];
+            latW = seg.walking.origin.split(',')[1];
+            diffB = this.calcDiff(longB, latB);
+            diffW = this.calcDiff(longW, latW);
+            if (diffB < diffW) {
+              // 先车后步行
+              this.busPoints(seg);
+              let steps = seg.walking.steps;
+              this.commonPoints(steps);
+            } else {
+              // 先步行后车
+              let steps = seg.walking.steps;
+              this.commonPoints(steps);
+              this.busPoints(seg);
+            }
+          } else {
+            if (seg.bus.buslines.length !== 0) {
+              // 车
+              this.busPoints(seg);
+            }
+            if (seg.walking) {
+              // 步行
+              let steps = seg.walking.steps;
+              this.commonPoints(steps);
+            }
+          }
+        });
+      }
+
+      console.log(11, this.points);
+
+      this.polyline = [
+        {
+          points: this.points,
+          color: '#0091ff',
+          width: 6
+        }
+      ];
+      this.$apply();
+    });
+  }
+
+  initData() {
+    amap
+      .getRegeo()
+      .then(data => {
+        let { latitude, longitude } = data[0];
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.markers = [
+          {
+            iconPath: '../../img/start.png',
+            id: 0,
+            width: 40,
+            height: 40,
+            longitude: longitude,
+            latitude: latitude
+          },
+          {
+            iconPath: '../../img/end.png',
+            id: 0,
+            width: 40,
+            height: 40,
+            longitude: this.destination.split(',')[0],
+            latitude: this.destination.split(',')[1]
+          }
+        ];
+        this.origin = longitude + ',' + latitude;
+        this.$apply();
+        this.getRoute();
+      })
+      .catch(info => {
+        this.$toast(info.errMsg);
+      });
+  }
+
+  events = {};
+
+  onReady() {
+    var animation = wx.createAnimation({
+      timingFunction: 'ease'
+    });
+    this.animation = animation;
+    this.$apply();
+  }
+
+  onLoad(options) {
+    this.destination = options.pos;
+    this.$apply();
+    this.initData();
+  }
+}
+</script>
