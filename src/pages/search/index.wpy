@@ -1,40 +1,96 @@
 <style lang='less'>
+  .search-container{
+    padding: 30px 18px 0 18px;
+    .search-bar{
+      input{
+        border: 1px solid #9d9d9d;
+        border-radius: 4px;
+        width: 280px;
+      }
+    }
+    .search-item{
+      padding: 8px 0 8px 0;
+      border-bottom: 1px solid #9d9d9d;
+      color: #333;
+    }
+    .search-none{
+      padding: 8px 0 8px 0;
+    }
+  }
 
 </style>
 
 <template>
-  <view>
-    123
+  <view class='search-container'>
+    <view class='search-bar'>
+      <input placeholder='搜索' @input='changInput' auto-focus />
+    </view>
+    <view class='search-content'>
+      <block wx:if="{{tips.length !== 0}}">
+        <repeat for="{{tips}}" key="index">
+          <view class='search-item' @tap="search" data-str="{{item.name}}">
+            {{item.name}}
+          </view>
+        </repeat>
+      </block>
+      <view wx:else class='search-none' >
+        无搜索结果
+      </view>
+    </view>
   </view>
 </template>
 
 <script>
 import wepy from 'wepy';
 import amap from '../../map/amap';
+import emitter from '../../utils/events';
 
 export default class Index extends wepy.page {
-  config= {};
+  config = {};
 
-  components= {
+  components = {};
 
+  mixins = [];
+
+  data = {
+    city: '',
+    tips: []
   };
 
-  mixins= [];
+  computed = {};
 
-  data= {
-
+  methods = {
+    changInput(e) {
+      if (!e.detail.value) {
+        this.tips = [];
+        this.$apply();
+        return;
+      }
+      amap
+        .getInputtips(e.detail.value, this.city)
+        .then(data => {
+          if (data.tips.length === 0) {
+            this.tips = [];
+          } else {
+            this.tips = data.tips;
+          }
+          this.$apply();
+        })
+        .catch(info => {
+          this.$toast(info.errMsg);
+        });
+    },
+    search(e) {
+      this.$link('/pages/home/index');
+      emitter.emit('searchTip', e.currentTarget.dataset.str);
+    }
   };
 
-  computed= {};
+  events = {};
 
-  methods= {
-
-  };
-
-  events= {};
-
-  onLoad() {
-
+  onLoad(options) {
+    this.city = options.city;
+    this.$apply();
   }
 }
 </script>

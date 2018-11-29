@@ -98,7 +98,7 @@
         <cover-view class='line'></cover-view>
         <cover-view class='route_bottom_wrap'>
           <cover-view class='route_content'>
-            <cover-view class='route_item' wx:for="{{[{desc: '11111'},{desc: '11111'}]}}" wx:key="{{index}}">
+            <cover-view class='route_item' wx:for="{{[{desc: '待完善'},{desc: '待完善'}]}}" wx:key="{{index}}">
               {{item.desc}}
             </cover-view>
           </cover-view>
@@ -225,8 +225,6 @@ export default class Index extends wepy.page {
     }
 
     amap.getRoute(str, this.origin, this.destination).then(data => {
-      console.log(data);
-
       if (type !== 'gongjiao') {
         let steps = data.paths[0].steps;
         this.commonPoints(steps);
@@ -281,8 +279,6 @@ export default class Index extends wepy.page {
           }
         });
       }
-
-      console.log(11, this.points);
 
       this.polyline = [
         {

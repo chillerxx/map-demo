@@ -23,10 +23,10 @@ export default class extends wepy.app {
       'pages/route/index'
     ],
     window: {
-      backgroundTextStyle: 'light',
-      navigationBarBackgroundColor: '#292e38',
-      navigationBarTitleText: '',
-      navigationBarTextStyle: 'black',
+      // backgroundTextStyle: 'light',
+      // navigationBarBackgroundColor: '#292e38',
+      // navigationBarTitleText: '',
+      // navigationBarTextStyle: 'black',
       navigationStyle: 'custom'
     }
   }

@@ -7,18 +7,34 @@ class Amap {
    * 获取POI数据
    * @param {string} querykeywords 关键字
    */
-  static getPoiAround(querykeywords = '', iconPath = '', iconPathSelected = '') {
+  static getPoiAround(
+    querykeywords = '',
+    iconPath = '',
+    iconPathSelected = ''
+  ) {
     return new Promise((resolve, reject) =>
-      myMap.getPoiAround({ iconPath, iconPathSelected, querykeywords, success: resolve, fail: reject })
+      myMap.getPoiAround({
+        iconPath,
+        iconPathSelected,
+        querykeywords,
+        success: resolve,
+        fail: reject
+      })
     );
   }
 
   /**
    * 获取地理描述数据
    */
-  static getRegeo(iconPath='', iconWidth='', iconHeight='') {
+  static getRegeo(iconPath = '', iconWidth = '', iconHeight = '') {
     return new Promise((resolve, reject) =>
-      myMap.getRegeo({iconPath, iconWidth, iconHeight, success: resolve, fail: reject })
+      myMap.getRegeo({
+        iconPath,
+        iconWidth,
+        iconHeight,
+        success: resolve,
+        fail: reject
+      })
     );
   }
 
@@ -37,11 +53,13 @@ class Amap {
    * @param {string} keywords
    * @param {string} location
    */
-  static getInputtips(location = '', keywords = '') {
+  static getInputtips(keywords = '', city = '', location = '') {
     return new Promise((resolve, reject) =>
       myMap.getInputtips({
         keywords,
+        city,
         location,
+        citylimit: true,
         success: resolve,
         fail: reject
       })
@@ -57,7 +75,7 @@ class Amap {
    * @param {string} origin         出发地坐标
    * @param {string} destination    目的地坐标
    */
-  static getRoute(type, origin, destination, city='杭州') {
+  static getRoute(type, origin, destination, city = '杭州') {
     return new Promise((resolve, reject) =>
       myMap[type]({
         origin,
@@ -68,7 +86,6 @@ class Amap {
       })
     );
   }
-
 }
 module.exports = Amap;
 
