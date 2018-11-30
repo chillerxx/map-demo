@@ -246,10 +246,6 @@ export default class Index extends wepy.page {
     this.getPos();
     this.eventEmitter = emitter.on('searchTip', (str) => {
       this.getSearchTip(str);
-
-      // this.change();
-      // this.$apply();
-      // console.log(22, this);
     });
   }
 }

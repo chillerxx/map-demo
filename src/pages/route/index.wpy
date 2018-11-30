@@ -35,6 +35,9 @@
     border-radius: 30px 30px 0 0;
     position: absolute;
     bottom: 0;
+    .down_icon{
+
+    }
     .route_top {
       color: #8a8a8a;
       height: 70px;
@@ -54,6 +57,7 @@
         background: #fff;
         height: 264px;
         .route_item {
+          white-space: normal;
           padding: 10px;
         }
       }
@@ -98,8 +102,8 @@
         <cover-view class='line'></cover-view>
         <cover-view class='route_bottom_wrap'>
           <cover-view class='route_content'>
-            <cover-view class='route_item' wx:for="{{[{desc: '待完善'},{desc: '待完善'}]}}" wx:key="{{index}}">
-              {{item.desc}}
+            <cover-view class='route_item' wx:for="{{instruction}}" wx:key="{{index}}">
+              {{item}}
             </cover-view>
           </cover-view>
           <cover-view class='line'></cover-view>
@@ -132,6 +136,7 @@ export default class Index extends wepy.page {
     markers: [],
     polyline: [],
     points: [],
+    instruction: [],
     info: {},
     desc: [],
     type: 'jiache',
@@ -178,6 +183,7 @@ export default class Index extends wepy.page {
   commonPoints(steps) {
     let points = this.points;
     steps.forEach(step => {
+      this.instruction = [...this.instruction, step.instruction];
       let lines = step.polyline.split(';');
       lines.forEach(line => {
         points.push({
@@ -193,7 +199,9 @@ export default class Index extends wepy.page {
   // 公交
   busPoints(seg) {
     let points = this.points;
-    let lines = seg.bus.buslines[0].polyline.split(';');
+    let bus = seg.bus.buslines[0];
+    this.instruction = [...this.instruction, bus.name.substring(0, bus.name.indexOf('('))  + ' ' + bus.departure_stop.name + '-' + bus.arrival_stop.name];
+    let lines = bus.polyline.split(';');
     lines.forEach(line => {
       points.push({
         longitude: line.split(',')[0],
@@ -225,8 +233,11 @@ export default class Index extends wepy.page {
     }
 
     amap.getRoute(str, this.origin, this.destination).then(data => {
+      console.log(11, data);
+
       if (type !== 'gongjiao') {
         let steps = data.paths[0].steps;
+        this.instruction = [];
         this.commonPoints(steps);
         this.info = {
           taxi: data.taxi_cost ? Math.floor(data.taxi_cost) : '0',
@@ -234,6 +245,7 @@ export default class Index extends wepy.page {
           time: data.paths[0].duration
         };
       } else {
+        this.instruction = [];
         let trans = data.transits[0];
         this.info = {
           taxi: Math.floor(data.taxi_cost),
@@ -257,8 +269,8 @@ export default class Index extends wepy.page {
             diffW = this.calcDiff(longW, latW);
             if (diffB < diffW) {
               // 先车后步行
-              this.busPoints(seg);
               let steps = seg.walking.steps;
+              this.busPoints(seg);
               this.commonPoints(steps);
             } else {
               // 先步行后车
