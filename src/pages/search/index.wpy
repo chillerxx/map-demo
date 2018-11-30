@@ -14,6 +14,7 @@
       color: #333;
     }
     .search-none{
+      color: #333;
       padding: 8px 0 8px 0;
     }
   }

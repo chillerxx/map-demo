@@ -86,7 +86,7 @@
         <cover-view class='map_search' @tap="linkToSearch">
           <cover-image class='search-icon' src='../../img/search.png'></cover-image>
           <cover-view class="longline"></cover-view>
-          <cover-view class='search-input'>3333</cover-view>
+          <cover-view class='search-input'>{{tip}}</cover-view>
         </cover-view>
         <cover-view class='wrap' wx:if="{{currentMarker!==''}}">
           <cover-view class='map_marker_detail'>
@@ -124,7 +124,8 @@ export default class Index extends wepy.page {
     currentMarker: '',
     photoIndex: 0,
     photoUrl: '',
-    desPos: ''
+    desPos: '',
+    tip: '11'
   };
 
   computed = {
@@ -205,7 +206,7 @@ export default class Index extends wepy.page {
     amap
       .getPoiAround(str)
       .then(data => {
-        console.log(data);
+        console.log(this.tip, data);
         var markers_ = data.markers;
         markers_.forEach(item => {
           item.iconPath = '../../img/flag_.png';
@@ -231,12 +232,20 @@ export default class Index extends wepy.page {
       });
   }
 
+  change(){
+    this.tip = '222111';
+    this.$apply();
+  }
+
   events = {};
 
-  async onLoad() {
+  onLoad() {
     this.getPos();
     this.eventEmitter = emitter.on('searchTip', (str) => {
       this.getSearchTip(str);
+      // this.change();
+      // this.$apply();
+      // console.log(22, this);
     });
   }
 }
