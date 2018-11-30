@@ -83,6 +83,7 @@ export default class Index extends wepy.page {
     },
     search(e) {
       this.$link('/pages/home/index');
+      wx.setStorageSync('tip', e.currentTarget.dataset.str);
       emitter.emit('searchTip', e.currentTarget.dataset.str);
     }
   };

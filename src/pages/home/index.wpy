@@ -25,6 +25,7 @@
   align-items: center;
   padding: 0 10px 0 10px;
   .search-input {
+    font-size: 16px;
     color: #333;
     padding-left: 10px;
     display: inline-block;
@@ -239,10 +240,13 @@ export default class Index extends wepy.page {
 
   events = {};
 
-  onLoad() {
+  onLoad(options) {
+    this.tip = wx.getStorageSync('tip');
+    this.$apply();
     this.getPos();
     this.eventEmitter = emitter.on('searchTip', (str) => {
       this.getSearchTip(str);
+
       // this.change();
       // this.$apply();
       // console.log(22, this);
